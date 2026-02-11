@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DLP - Design of Language Processor</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #0a0a0a;
+        min-height: 100vh;
+        color: #ffffff;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 40px 30px;
+        background: #1a1a1a;
+        border-radius: 16px;
+        border: 1px solid #2a2a2a;
+        box-shadow: 0 4px 24px rgba(255, 204, 0, 0.1);
+      }
+
+      header h1 {
+        font-size: 2.8rem;
+        margin-bottom: 10px;
+        color: #ffc107;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      header p {
+        color: #999;
+        font-size: 1.1rem;
+        font-weight: 400;
+      }
+
+      .overall-progress {
+        background: #1a1a1a;
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 32px;
+        border: 1px solid #2a2a2a;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+      }
+
+      .overall-progress h2 {
+        margin-bottom: 16px;
+        font-size: 1.4rem;
+        color: #ffc107;
+        font-weight: 600;
+      }
+
+      .progress-bar {
+        background: #2a2a2a;
+        border-radius: 12px;
+        height: 32px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #3a3a3a;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ffc107 0%, #ffdb4d 100%);
+        border-radius: 12px;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+      }
+
+      .progress-text {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1rem;
+        line-height: 32px;
+        color: #000;
+        mix-blend-mode: difference;
+      }
+
+      .stats-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+        justify-content: space-between;
+      }
+
+      .stat-card {
+        flex: 1;
+        background: #232323;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #3a3a3a;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ffc107;
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .unit {
+        background: #1a1a1a;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        overflow: hidden;
+        border: 1px solid #2a2a2a;
+        transition: all 0.3s ease;
+      }
+
+      .unit:hover {
+        border-color: #3a3a3a;
+        box-shadow: 0 4px 20px rgba(255, 193, 7, 0.15);
+      }
+
+      .unit-header {
+        background: #232323;
+        padding: 24px 28px;
+        cursor: default;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #2a2a2a;
+      }
+
+      .unit-header h3 {
+        font-size: 1.25rem;
+        color: #ffc107;
+        font-weight: 600;
+        flex: 1;
+        padding-right: 20px;
+      }
+
+      .unit-progress {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .unit-progress-bar {
+        width: 180px;
+        height: 12px;
+        background: #2a2a2a;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #3a3a3a;
+      }
+
+      .unit-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ffc107, #ffdb4d);
+        border-radius: 6px;
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .unit-percent {
+        font-size: 1rem;
+        color: #ffc107;
+        font-weight: 700;
+        min-width: 50px;
+        text-align: right;
+      }
+
+      .unit-content {
+        padding: 24px 28px;
+      }
+
+      .section {
+        margin-bottom: 28px;
+      }
+
+      .section:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-title {
+        font-size: 1.05rem;
+        color: #ffc107;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #2a2a2a;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+
+      .topic {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        margin: 10px 0;
+        background: #232323;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        border: 1px solid transparent;
+        user-select: none;
+      }
+
+      .topic:hover {
+        background: #2a2a2a;
+        border-color: #3a3a3a;
+        transform: translateX(4px);
+      }
+
+      .topic.completed {
+        background: rgba(255, 193, 7, 0.12);
+        border-color: #ffc107;
+        border-left-width: 3px;
+      }
+
+      .topic.completed:hover {
+        background: rgba(255, 193, 7, 0.18);
+      }
+
+      .topic input[type="checkbox"] {
+        display: none;
+      }
+
+      .topic .checkmark {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #555;
+        border-radius: 6px;
+        margin-right: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+        background: #1a1a1a;
+      }
+
+      .topic:hover .checkmark {
+        border-color: #777;
+      }
+
+      .topic.completed .checkmark {
+        background: #ffc107;
+        border-color: #ffc107;
+        box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+      }
+
+      .topic .checkmark::after {
+        content: "✓";
+        color: #000;
+        font-weight: 900;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+      }
+
+      .topic.completed .checkmark::after {
+        opacity: 1;
+      }
+
+      .topic span {
+        font-size: 1rem;
+        color: #ccc;
+        font-weight: 400;
+        line-height: 1.5;
+      }
+
+      .topic.completed span {
+        color: #ffc107;
+        font-weight: 500;
+      }
+
+      .reset-btn {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        margin-top: 24px;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        color: #ff5252;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .reset-btn:hover {
+        background: #333;
+        border-color: #ff5252;
+        box-shadow: 0 4px 16px rgba(255, 82, 82, 0.3);
+      }
+
+      .reset-btn:active {
+        transform: scale(0.98);
+      }
+
+      @media (max-width: 768px) {
+        header h1 {
+          font-size: 2rem;
+        }
+
+        .unit-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+        }
+
+        .unit-header h3 {
+          padding-right: 0;
+        }
+
+        .unit-progress {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .unit-progress-bar {
+          flex: 1;
+          max-width: 200px;
+        }
+
+        .stats-row {
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 12px;
+        }
+
+        header {
+          padding: 24px 20px;
+        }
+
+        header h1 {
+          font-size: 1.6rem;
+        }
+
+        .unit-content {
+          padding: 16px 20px;
+        }
+
+        .topic {
+          padding: 12px 14px;
+          font-size: 0.95rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Design of Language Processor</h1>
+        <p>Track your course progress</p>
+      </header>
+
+      <div class="overall-progress">
+        <h2>Overall Progress</h2>
+        <div class="progress-bar">
+          <div class="progress-fill" id="overall-fill" style="width: 0%"></div>
+          <span class="progress-text" id="overall-text">0%</span>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-value" id="completed-count">0</div>
+            <div class="stat-label">Completed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="remaining-count">19</div>
+            <div class="stat-label">Remaining</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="total-count">19</div>
+            <div class="stat-label">Total Topics</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unit 1 -->
+      <div class="unit" data-unit="1">
+        <div class="unit-header">
+          <h3>Unit 1: Overview of Language Processors & Lexical Analysis</h3>
+          <div class="unit-progress">
+            <div class="unit-progress-bar">
+              <div
+                class="unit-progress-fill"
+                data-unit-fill="1"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="unit-percent" data-unit-percent="1">0%</span>
+          </div>
+        </div>
+        <div class="unit-content">
+          <div class="section">
+            <h4 class="section-title">Language Processors</h4>
+            <div class="topic" data-topic="1-1">
+              <input type="checkbox" id="topic-1-1" />
+              <div class="checkmark"></div>
+              <span>Language Processors</span>
+            </div>
+            <div class="topic" data-topic="1-2">
+              <input type="checkbox" id="topic-1-2" />
+              <div class="checkmark"></div>
+              <span>The Structure of a Compiler</span>
+            </div>
+            <div class="topic" data-topic="1-3">
+              <input type="checkbox" id="topic-1-3" />
+              <div class="checkmark"></div>
+              <span>Application of Compiler Technology</span>
+            </div>
+          </div>
+          <div class="section">
+            <h4 class="section-title">Lexical Analysis</h4>
+            <div class="topic" data-topic="1-4">
+              <input type="checkbox" id="topic-1-4" />
+              <div class="checkmark"></div>
+              <span>The Role of Lexical Analyzer</span>
+            </div>
+            <div class="topic" data-topic="1-5">
+              <input type="checkbox" id="topic-1-5" />
+              <div class="checkmark"></div>
+              <span>Specification of Tokens</span>
+            </div>
+            <div class="topic" data-topic="1-6">
+              <input type="checkbox" id="topic-1-6" />
+              <div class="checkmark"></div>
+              <span>Recognition of Tokens</span>
+            </div>
+            <div class="topic" data-topic="1-7">
+              <input type="checkbox" id="topic-1-7" />
+              <div class="checkmark"></div>
+              <span>Lexical Analyzer Generator LEX</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unit 2 -->
+      <div class="unit" data-unit="2">
+        <div class="unit-header">
+          <h3>Unit 2: Syntax Analysis</h3>
+          <div class="unit-progress">
+            <div class="unit-progress-bar">
+              <div
+                class="unit-progress-fill"
+                data-unit-fill="2"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="unit-percent" data-unit-percent="2">0%</span>
+          </div>
+        </div>
+        <div class="unit-content">
+          <div class="section">
+            <h4 class="section-title">Syntax Analysis</h4>
+            <div class="topic" data-topic="2-1">
+              <input type="checkbox" id="topic-2-1" />
+              <div class="checkmark"></div>
+              <span>Role of the Parser</span>
+            </div>
+            <div class="topic" data-topic="2-2">
+              <input type="checkbox" id="topic-2-2" />
+              <div class="checkmark"></div>
+              <span>Representative Grammar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unit 3 -->
+      <div class="unit" data-unit="3">
+        <div class="unit-header">
+          <h3>Unit 3: Parsing Methods</h3>
+          <div class="unit-progress">
+            <div class="unit-progress-bar">
+              <div
+                class="unit-progress-fill"
+                data-unit-fill="3"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="unit-percent" data-unit-percent="3">0%</span>
+          </div>
+        </div>
+        <div class="unit-content">
+          <div class="section">
+            <h4 class="section-title">Top Down Parsing</h4>
+            <div class="topic" data-topic="3-1">
+              <input type="checkbox" id="topic-3-1" />
+              <div class="checkmark"></div>
+              <span>Recursive-Descent Parsing</span>
+            </div>
+            <div class="topic" data-topic="3-2">
+              <input type="checkbox" id="topic-3-2" />
+              <div class="checkmark"></div>
+              <span>FIRST and FOLLOW</span>
+            </div>
+            <div class="topic" data-topic="3-3">
+              <input type="checkbox" id="topic-3-3" />
+              <div class="checkmark"></div>
+              <span>LL(1) Grammar</span>
+            </div>
+            <div class="topic" data-topic="3-4">
+              <input type="checkbox" id="topic-3-4" />
+              <div class="checkmark"></div>
+              <span>Non-recursive Predictive Parsing</span>
+            </div>
+            <div class="topic" data-topic="3-5">
+              <input type="checkbox" id="topic-3-5" />
+              <div class="checkmark"></div>
+              <span
+                >Construction of Non-recursive Predictive Parsing Table</span
+              >
+            </div>
+            <div class="topic" data-topic="3-6">
+              <input type="checkbox" id="topic-3-6" />
+              <div class="checkmark"></div>
+              <span>Error Recovery in Predictive Parsing</span>
+            </div>
+          </div>
+          <div class="section">
+            <h4 class="section-title">Bottom-up Parsing</h4>
+            <div class="topic" data-topic="3-7">
+              <input type="checkbox" id="topic-3-7" />
+              <div class="checkmark"></div>
+              <span>Shift-Reduce Parsing</span>
+            </div>
+            <div class="topic" data-topic="3-8">
+              <input type="checkbox" id="topic-3-8" />
+              <div class="checkmark"></div>
+              <span>Conflicts during Shift-Reduce Parsing</span>
+            </div>
+            <div class="topic" data-topic="3-9">
+              <input type="checkbox" id="topic-3-9" />
+              <div class="checkmark"></div>
+              <span>Introduction to LR Parsing</span>
+            </div>
+            <div class="topic" data-topic="3-10">
+              <input type="checkbox" id="topic-3-10" />
+              <div class="checkmark"></div>
+              <span>LR Parsing Algorithm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetProgress()">
+        🔄 Reset All Progress
+      </button>
+    </div>
+
+    <script>
+      // Load saved progress from localStorage
+      function loadProgress() {
+        const saved = localStorage.getItem("dlp-progress");
+        if (saved) {
+          const completed = JSON.parse(saved);
+          completed.forEach((topicId) => {
+            const topic = document.querySelector(`[data-topic="${topicId}"]`);
+            if (topic) {
+              topic.classList.add("completed");
+              topic.querySelector("input").checked = true;
+            }
+          });
+        }
+        updateProgress();
+      }
+
+      // Save progress to localStorage
+      function saveProgress() {
+        const completed = [];
+        document.querySelectorAll(".topic.completed").forEach((topic) => {
+          completed.push(topic.dataset.topic);
+        });
+        localStorage.setItem("dlp-progress", JSON.stringify(completed));
+      }
+
+      // Update all progress bars
+      function updateProgress() {
+        // Update unit progress
+        document.querySelectorAll(".unit").forEach((unit) => {
+          const unitNum = unit.dataset.unit;
+          const topics = unit.querySelectorAll(".topic");
+          const completed = unit.querySelectorAll(".topic.completed");
+          const percent =
+            topics.length > 0
+              ? Math.round((completed.length / topics.length) * 100)
+              : 0;
+
+          document.querySelector(`[data-unit-fill="${unitNum}"]`).style.width =
+            percent + "%";
+          document.querySelector(
+            `[data-unit-percent="${unitNum}"]`,
+          ).textContent = percent + "%";
+        });
+
+        // Update overall progress
+        const allTopics = document.querySelectorAll(".topic");
+        const allCompleted = document.querySelectorAll(".topic.completed");
+        const overallPercent =
+          allTopics.length > 0
+            ? Math.round((allCompleted.length / allTopics.length) * 100)
+            : 0;
+
+        document.getElementById("overall-fill").style.width =
+          overallPercent + "%";
+        document.getElementById("overall-text").textContent =
+          overallPercent + "%";
+
+        // Update stats
+        document.getElementById("completed-count").textContent =
+          allCompleted.length;
+        document.getElementById("remaining-count").textContent =
+          allTopics.length - allCompleted.length;
+        document.getElementById("total-count").textContent = allTopics.length;
+      }
+
+      // Toggle topic completion
+      document.querySelectorAll(".topic").forEach((topic) => {
+        topic.addEventListener("click", function () {
+          this.classList.toggle("completed");
+          this.querySelector("input").checked =
+            this.classList.contains("completed");
+          saveProgress();
+          updateProgress();
+        });
+      });
+
+      // Reset all progress
+      function resetProgress() {
+        if (confirm("Are you sure you want to reset all progress?")) {
+          document.querySelectorAll(".topic").forEach((topic) => {
+            topic.classList.remove("completed");
+            topic.querySelector("input").checked = false;
+          });
+          localStorage.removeItem("dlp-progress");
+          updateProgress();
+        }
+      }
+
+      // Initialize
+      loadProgress();
+    </script>
+  </body>
+</html>
