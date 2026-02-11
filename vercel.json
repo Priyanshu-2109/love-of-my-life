@@ -1,5 +1,3 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/love.html" }
-  ]
+  "rewrites": [{ "source": "/", "destination": "/love.html" }]
 }
