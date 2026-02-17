@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cloud Quest - CSE314</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: #0a0a2e;
+        min-height: 100vh;
+        color: #fff;
+        padding: 20px;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      /* Starfield Background */
+      .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .star {
+        position: absolute;
+        background: #fff;
+        border-radius: 50%;
+        animation: twinkle var(--dur) ease-in-out infinite;
+      }
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0.2;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.3);
+        }
+      }
+
+      /* Floating Clouds */
+      .floating-cloud {
+        position: fixed;
+        font-size: 3rem;
+        opacity: 0.08;
+        animation: floatCloud linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+      @keyframes floatCloud {
+        0% {
+          transform: translateX(-100px);
+        }
+        100% {
+          transform: translateX(calc(100vw + 100px));
+        }
+      }
+
+      /* Confetti */
+      .confetti-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        overflow: hidden;
+      }
+      .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        top: -10px;
+        animation: confettiFall 3s ease-out forwards;
+      }
+      @keyframes confettiFall {
+        0% {
+          transform: translateY(0) rotate(0deg) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(720deg) scale(0);
+          opacity: 0;
+        }
+      }
+
+      /* XP Popup */
+      .xp-popup {
+        position: fixed;
+        font-family: "Press Start 2P", monospace;
+        font-size: 1.2rem;
+        color: #ffd700;
+        pointer-events: none;
+        z-index: 9998;
+        text-shadow:
+          0 0 10px #ffd700,
+          0 0 20px #ff8c00;
+        animation: xpFloat 1.5s ease-out forwards;
+      }
+      @keyframes xpFloat {
+        0% {
+          transform: translateY(0) scale(0.5);
+          opacity: 0;
+        }
+        20% {
+          transform: translateY(-20px) scale(1.2);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-120px) scale(0.8);
+          opacity: 0;
+        }
+      }
+
+      /* Level Up Overlay */
+      .level-up-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .level-up-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .level-up-card {
+        text-align: center;
+        animation: levelUpBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      @keyframes levelUpBounce {
+        0% {
+          transform: scale(0) rotate(-10deg);
+        }
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
+      }
+      .level-up-card .rank-icon {
+        font-size: 5rem;
+        margin-bottom: 16px;
+        display: block;
+      }
+      .level-up-card .level-text {
+        font-family: "Press Start 2P", monospace;
+        font-size: 1.8rem;
+        background: linear-gradient(135deg, #ffd700, #ff8c00, #ffd700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        animation: glow 1.5s ease-in-out infinite alternate;
+      }
+      @keyframes glow {
+        from {
+          filter: drop-shadow(0 0 5px #ffd700);
+        }
+        to {
+          filter: drop-shadow(0 0 20px #ff8c00);
+        }
+      }
+      .level-up-card .rank-name {
+        font-size: 1.4rem;
+        color: #aaa;
+        margin-bottom: 24px;
+      }
+      .level-up-card .dismiss-btn {
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        color: #000;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 25px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .level-up-card .dismiss-btn:hover {
+        transform: scale(1.1);
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Game Header */
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 30px;
+        background: linear-gradient(
+          135deg,
+          rgba(20, 20, 80, 0.9),
+          rgba(10, 30, 60, 0.95)
+        );
+        border-radius: 20px;
+        border: 2px solid rgba(100, 100, 255, 0.3);
+        box-shadow:
+          0 0 30px rgba(100, 100, 255, 0.15),
+          inset 0 0 60px rgba(100, 100, 255, 0.05);
+        position: relative;
+        overflow: hidden;
+      }
+      header::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(
+          from 0deg,
+          transparent,
+          rgba(100, 150, 255, 0.05),
+          transparent,
+          rgba(255, 200, 50, 0.05),
+          transparent
+        );
+        animation: headerRotate 20s linear infinite;
+      }
+      @keyframes headerRotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .game-title {
+        position: relative;
+        z-index: 1;
+        font-family: "Press Start 2P", monospace;
+        font-size: 1.6rem;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #00d4ff, #7b68ee, #ff6bff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: titleShift 4s ease-in-out infinite;
+      }
+      @keyframes titleShift {
+        0%,
+        100% {
+          filter: hue-rotate(0deg);
+        }
+        50% {
+          filter: hue-rotate(30deg);
+        }
+      }
+      .game-subtitle {
+        position: relative;
+        z-index: 1;
+        color: #8888cc;
+        font-size: 0.95rem;
+      }
+      .course-badge {
+        position: relative;
+        z-index: 1;
+        display: inline-block;
+        background: linear-gradient(
+          135deg,
+          rgba(123, 104, 238, 0.3),
+          rgba(0, 212, 255, 0.3)
+        );
+        color: #c0c0ff;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        border: 1px solid rgba(123, 104, 238, 0.5);
+        font-family: "Press Start 2P", monospace;
+      }
+
+      /* Player HUD */
+      .player-hud {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .hud-card {
+        background: linear-gradient(
+          135deg,
+          rgba(20, 20, 70, 0.9),
+          rgba(15, 25, 55, 0.95)
+        );
+        border-radius: 16px;
+        padding: 20px 24px;
+        border: 1px solid rgba(100, 100, 255, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+      .hud-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #7b68ee, #00d4ff, #ffd700);
+      }
+
+      /* Rank & Level Card */
+      .rank-display {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .rank-avatar {
+        font-size: 3rem;
+        animation: avatarBob 3s ease-in-out infinite;
+      }
+      @keyframes avatarBob {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+      .rank-info {
+        flex: 1;
+      }
+      .rank-title {
+        font-size: 0.7rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 4px;
+        font-family: "Press Start 2P", monospace;
+      }
+      .rank-name-display {
+        font-size: 1.3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .level-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #7b68ee, #6c5ce7);
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        margin-top: 4px;
+      }
+
+      /* XP Bar */
+      .xp-section {
+        margin-top: 12px;
+      }
+      .xp-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 6px;
+      }
+      .xp-bar-bg {
+        height: 14px;
+        background: rgba(30, 30, 80, 0.8);
+        border-radius: 7px;
+        overflow: hidden;
+        border: 1px solid rgba(100, 100, 255, 0.3);
+        position: relative;
+      }
+      .xp-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7b68ee, #00d4ff, #ffd700);
+        border-radius: 7px;
+        transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        box-shadow: 0 0 10px rgba(123, 104, 238, 0.5);
+      }
+      .xp-bar-fill::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        animation: shimmer 2s infinite;
+      }
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      /* Stats HUD */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        height: 100%;
+      }
+      .stat-box {
+        background: rgba(30, 30, 80, 0.5);
+        border-radius: 12px;
+        padding: 14px;
+        text-align: center;
+        border: 1px solid rgba(100, 100, 255, 0.15);
+        transition: all 0.3s ease;
+      }
+      .stat-box:hover {
+        border-color: rgba(123, 104, 238, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(123, 104, 238, 0.2);
+      }
+      .stat-icon {
+        font-size: 1.4rem;
+        margin-bottom: 4px;
+      }
+      .stat-number {
+        font-family: "Press Start 2P", monospace;
+        font-size: 1.2rem;
+        color: #ffd700;
+      }
+      .stat-name {
+        font-size: 0.7rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 2px;
+      }
+
+      /* Achievements */
+      .achievements {
+        background: linear-gradient(
+          135deg,
+          rgba(20, 20, 70, 0.9),
+          rgba(15, 25, 55, 0.95)
+        );
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(100, 100, 255, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      }
+      .achievements h3 {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.8rem;
+        color: #ffd700;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .badges-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .badge {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        background: rgba(30, 30, 60, 0.8);
+        border: 2px solid #333;
+        transition: all 0.3s ease;
+        position: relative;
+        filter: grayscale(1) brightness(0.4);
+      }
+      .badge.unlocked {
+        filter: none;
+        border-color: #ffd700;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        animation: badgePulse 2s ease-in-out infinite;
+      }
+      @keyframes badgePulse {
+        0%,
+        100% {
+          box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+      }
+      .badge .badge-tooltip {
+        position: absolute;
+        bottom: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.6rem;
+        color: #888;
+        white-space: nowrap;
+        font-family: "Press Start 2P", monospace;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .badge:hover .badge-tooltip {
+        opacity: 1;
+      }
+
+      /* Countdown */
+      .countdown {
+        background: linear-gradient(
+          135deg,
+          rgba(80, 20, 20, 0.6),
+          rgba(60, 15, 40, 0.7)
+        );
+        border-radius: 16px;
+        padding: 16px 24px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 100, 100, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .countdown-label {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.7rem;
+        color: #ff6b6b;
+      }
+      .countdown-timer {
+        display: flex;
+        gap: 10px;
+      }
+      .countdown-unit {
+        text-align: center;
+      }
+      .countdown-num {
+        font-family: "Press Start 2P", monospace;
+        font-size: 1.3rem;
+        color: #ff8888;
+      }
+      .countdown-lbl {
+        font-size: 0.6rem;
+        color: #884444;
+        text-transform: uppercase;
+      }
+
+      /* Quest Units */
+      .quest {
+        background: linear-gradient(
+          135deg,
+          rgba(20, 20, 70, 0.85),
+          rgba(15, 25, 55, 0.9)
+        );
+        border-radius: 16px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(100, 100, 255, 0.2);
+        transition: all 0.3s ease;
+      }
+      .quest:hover {
+        border-color: rgba(123, 104, 238, 0.5);
+        box-shadow: 0 4px 24px rgba(123, 104, 238, 0.2);
+      }
+      .quest.quest-complete {
+        border-color: rgba(255, 215, 0, 0.4) !important;
+        box-shadow: 0 4px 24px rgba(255, 215, 0, 0.15) !important;
+      }
+      .quest-header {
+        background: rgba(30, 30, 80, 0.5);
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(100, 100, 255, 0.15);
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .quest-header:hover {
+        background: rgba(40, 40, 90, 0.6);
+      }
+
+      .quest-title-area {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 1;
+      }
+      .quest-icon {
+        font-size: 2rem;
+        animation: questIconFloat 3s ease-in-out infinite;
+      }
+      @keyframes questIconFloat {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-4px) rotate(3deg);
+        }
+      }
+      .quest-name {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.75rem;
+        color: #c0c0ff;
+        margin-bottom: 4px;
+      }
+      .quest-desc {
+        font-size: 0.9rem;
+        color: #7777aa;
+      }
+      .quest-xp-reward {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.65rem;
+        color: #ffd700;
+        margin-top: 4px;
+      }
+
+      .quest-progress-area {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .quest-bar-bg {
+        width: 140px;
+        height: 10px;
+        background: rgba(30, 30, 60, 0.8);
+        border-radius: 5px;
+        overflow: hidden;
+        border: 1px solid rgba(100, 100, 255, 0.3);
+      }
+      .quest-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7b68ee, #00d4ff);
+        border-radius: 5px;
+        transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .quest.quest-complete .quest-bar-fill {
+        background: linear-gradient(90deg, #ffd700, #ffaa00);
+      }
+      .quest-pct {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.7rem;
+        color: #7b68ee;
+        min-width: 45px;
+        text-align: right;
+      }
+      .quest.quest-complete .quest-pct {
+        color: #ffd700;
+      }
+
+      .quest-content {
+        padding: 0 24px;
+        max-height: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+          padding 0.4s ease;
+      }
+      .quest-content.open {
+        max-height: 2000px;
+        padding: 20px 24px;
+      }
+
+      .zone-title {
+        font-size: 0.85rem;
+        color: #7b68ee;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid rgba(123, 104, 238, 0.2);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mission {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        margin: 8px 0;
+        background: rgba(30, 30, 70, 0.5);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        border: 1px solid transparent;
+        user-select: none;
+        position: relative;
+        overflow: hidden;
+      }
+      .mission::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3px;
+        height: 100%;
+        background: #444;
+        transition: all 0.3s ease;
+      }
+      .mission:hover {
+        background: rgba(40, 40, 90, 0.6);
+        transform: translateX(4px);
+      }
+      .mission:hover::before {
+        background: #7b68ee;
+        box-shadow: 0 0 8px rgba(123, 104, 238, 0.5);
+      }
+      .mission.completed {
+        background: rgba(123, 104, 238, 0.15);
+      }
+      .mission.completed::before {
+        background: #ffd700;
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+      }
+
+      .mission input[type="checkbox"] {
+        display: none;
+      }
+
+      .mission .check-orb {
+        width: 28px;
+        height: 28px;
+        border: 2px solid #444;
+        border-radius: 50%;
+        margin-right: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        background: rgba(20, 20, 60, 0.8);
+        position: relative;
+      }
+      .mission:hover .check-orb {
+        border-color: #7b68ee;
+        box-shadow: 0 0 8px rgba(123, 104, 238, 0.3);
+      }
+      .mission.completed .check-orb {
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        border-color: #ffd700;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      }
+      .mission .check-orb::after {
+        content: "\2B50";
+        font-size: 12px;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+      .mission.completed .check-orb::after {
+        opacity: 1;
+        animation: starSpin 0.5s ease;
+      }
+      @keyframes starSpin {
+        0% {
+          transform: rotate(0deg) scale(0);
+        }
+        50% {
+          transform: rotate(180deg) scale(1.5);
+        }
+        100% {
+          transform: rotate(360deg) scale(1);
+        }
+      }
+
+      .mission-text {
+        flex: 1;
+        font-size: 0.95rem;
+        color: #9999cc;
+        line-height: 1.5;
+        transition: color 0.3s;
+      }
+      .mission.completed .mission-text {
+        color: #d4d4ff;
+        font-weight: 500;
+      }
+
+      .mission-xp {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.55rem;
+        color: #666;
+        margin-left: 12px;
+        white-space: nowrap;
+        transition: color 0.3s;
+      }
+      .mission.completed .mission-xp {
+        color: #ffd700;
+      }
+
+      .section {
+        margin-bottom: 24px;
+      }
+      .section:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Reset Button */
+      .reset-btn {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        margin-top: 24px;
+        background: rgba(30, 20, 40, 0.7);
+        border: 2px solid rgba(255, 60, 60, 0.2);
+        color: #ff4444;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.7rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .reset-btn:hover {
+        background: rgba(50, 20, 30, 0.8);
+        border-color: #ff4444;
+        box-shadow: 0 0 20px rgba(255, 60, 60, 0.2);
+        transform: scale(1.02);
+      }
+
+      .footer-info {
+        text-align: center;
+        padding: 20px;
+        color: #444;
+        font-size: 0.8rem;
+        font-family: "Press Start 2P", monospace;
+      }
+
+      /* Screen shake */
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-3px) rotate(-0.5deg);
+        }
+        75% {
+          transform: translateX(3px) rotate(0.5deg);
+        }
+      }
+      .shake {
+        animation: shake 0.3s ease;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .game-title {
+          font-size: 1.1rem;
+        }
+        .player-hud {
+          grid-template-columns: 1fr;
+        }
+        .quest-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .quest-progress-area {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .quest-bar-bg {
+          flex: 1;
+          max-width: 200px;
+        }
+        .badges-row {
+          justify-content: center;
+        }
+        .countdown {
+          flex-direction: column;
+          gap: 10px;
+        }
+      }
+      @media (max-width: 480px) {
+        body {
+          padding: 10px;
+        }
+        .game-title {
+          font-size: 0.9rem;
+        }
+        .rank-avatar {
+          font-size: 2.2rem;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        .mission {
+          padding: 12px 14px;
+        }
+        .badge {
+          width: 48px;
+          height: 48px;
+          font-size: 1.2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Stars -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Floating Clouds -->
+    <div id="floating-clouds"></div>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confetti-container"></div>
+
+    <!-- Level Up Overlay -->
+    <div class="level-up-overlay" id="level-up-overlay">
+      <div class="level-up-card">
+        <span class="rank-icon" id="levelup-icon">☁️</span>
+        <div class="level-text" id="levelup-text">LEVEL UP!</div>
+        <div class="rank-name" id="levelup-rank">Cloud Explorer</div>
+        <button class="dismiss-btn" onclick="dismissLevelUp()">
+          CONTINUE →
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <div class="course-badge">CSE314</div>
+        <h1 class="game-title">☁️ CLOUD QUEST ☁️</h1>
+        <p class="game-subtitle">Advanced Computing — Conquer the Cloud!</p>
+      </header>
+
+      <!-- Countdown -->
+      <div class="countdown">
+        <div class="countdown-label">⏰ EXAM RAID IN</div>
+        <div class="countdown-timer" id="countdown-timer">
+          <div class="countdown-unit">
+            <div class="countdown-num" id="cd-days">--</div>
+            <div class="countdown-lbl">Days</div>
+          </div>
+          <div class="countdown-unit">
+            <div class="countdown-num" id="cd-hours">--</div>
+            <div class="countdown-lbl">Hrs</div>
+          </div>
+          <div class="countdown-unit">
+            <div class="countdown-num" id="cd-mins">--</div>
+            <div class="countdown-lbl">Min</div>
+          </div>
+          <div class="countdown-unit">
+            <div class="countdown-num" id="cd-secs">--</div>
+            <div class="countdown-lbl">Sec</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Player HUD -->
+      <div class="player-hud">
+        <!-- Rank Card -->
+        <div class="hud-card">
+          <div class="rank-display">
+            <div class="rank-avatar" id="rank-avatar">🌱</div>
+            <div class="rank-info">
+              <div class="rank-title">Current Rank</div>
+              <div class="rank-name-display" id="rank-name">Cloud Noob</div>
+              <div class="level-badge" id="level-badge">LVL 1</div>
+            </div>
+          </div>
+          <div class="xp-section">
+            <div class="xp-header">
+              <span>XP: <strong id="current-xp">0</strong></span>
+              <span>Next: <strong id="next-xp">100</strong></span>
+            </div>
+            <div class="xp-bar-bg">
+              <div class="xp-bar-fill" id="xp-bar-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="hud-card">
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-icon">⚡</div>
+              <div class="stat-number" id="stat-completed">0</div>
+              <div class="stat-name">Cleared</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-number" id="stat-remaining">15</div>
+              <div class="stat-name">Left</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-icon">🏆</div>
+              <div class="stat-number" id="stat-total-xp">0</div>
+              <div class="stat-name">Total XP</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-number" id="stat-streak">0</div>
+              <div class="stat-name">Streak</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="achievements">
+        <h3>🏅 ACHIEVEMENTS</h3>
+        <div class="badges-row">
+          <div class="badge" id="badge-1" title="First Steps">
+            🚀
+            <span class="badge-tooltip">First Steps</span>
+          </div>
+          <div class="badge" id="badge-3" title="Warming Up">
+            ☁️
+            <span class="badge-tooltip">Cloud Gazer (3)</span>
+          </div>
+          <div class="badge" id="badge-5" title="Halfway There">
+            ⚡
+            <span class="badge-tooltip">Halfway (5)</span>
+          </div>
+          <div class="badge" id="badge-u1" title="Quest 1 Done">
+            🏔️
+            <span class="badge-tooltip">Quest 1 Clear</span>
+          </div>
+          <div class="badge" id="badge-10" title="Double Digits">
+            🔥
+            <span class="badge-tooltip">On Fire (10)</span>
+          </div>
+          <div class="badge" id="badge-u2" title="Quest 2 Done">
+            🏰
+            <span class="badge-tooltip">Quest 2 Clear</span>
+          </div>
+          <div class="badge" id="badge-all" title="Master">
+            👑
+            <span class="badge-tooltip">Cloud Master</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quest 1 -->
+      <div class="quest" data-quest="1" id="quest-1">
+        <div class="quest-header" onclick="toggleQuest(1)">
+          <div class="quest-title-area">
+            <div class="quest-icon">☁️</div>
+            <div>
+              <div class="quest-name">QUEST 1</div>
+              <div class="quest-desc">Introduction to Computing Technology</div>
+              <div class="quest-xp-reward">REWARD: +600 XP</div>
+            </div>
+          </div>
+          <div class="quest-progress-area">
+            <div class="quest-bar-bg">
+              <div
+                class="quest-bar-fill"
+                data-quest-fill="1"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="quest-pct" data-quest-pct="1">0/6</span>
+          </div>
+        </div>
+        <div class="quest-content open" id="quest-content-1">
+          <div class="section">
+            <h4 class="zone-title">🌐 Computing Technologies Overview</h4>
+            <div class="mission" data-topic="1-1" data-xp="100">
+              <input type="checkbox" id="topic-1-1" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Overview of Cluster Computing, Grid Computing Systems, and
+                Cloud Computing</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="1-2" data-xp="100">
+              <input type="checkbox" id="topic-1-2" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Roles and Boundaries of Cloud Computing</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+          </div>
+          <div class="section">
+            <h4 class="zone-title">📋 Cloud Fundamentals</h4>
+            <div class="mission" data-topic="1-3" data-xp="100">
+              <input type="checkbox" id="topic-1-3" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Cloud Characteristics, Cloud Delivery Models, and Cloud
+                Deployment Models</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="1-4" data-xp="100">
+              <input type="checkbox" id="topic-1-4" />
+              <div class="check-orb"></div>
+              <span class="mission-text">Desired Features of a Cloud</span>
+              <span class="mission-xp">+100 XP</span>
+            </div>
+          </div>
+          <div class="section">
+            <h4 class="zone-title">⚖️ Evaluation & Risks</h4>
+            <div class="mission" data-topic="1-5" data-xp="100">
+              <input type="checkbox" id="topic-1-5" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Benefits and Disadvantages of Cloud Computing</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="1-6" data-xp="100">
+              <input type="checkbox" id="topic-1-6" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Challenges and Risks in Cloud Computing</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quest 2 -->
+      <div class="quest" data-quest="2" id="quest-2">
+        <div class="quest-header" onclick="toggleQuest(2)">
+          <div class="quest-title-area">
+            <div class="quest-icon">🖥️</div>
+            <div>
+              <div class="quest-name">QUEST 2</div>
+              <div class="quest-desc">Cloud Enabling Technologies</div>
+              <div class="quest-xp-reward">REWARD: +900 XP</div>
+            </div>
+          </div>
+          <div class="quest-progress-area">
+            <div class="quest-bar-bg">
+              <div
+                class="quest-bar-fill"
+                data-quest-fill="2"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="quest-pct" data-quest-pct="2">0/9</span>
+          </div>
+        </div>
+        <div class="quest-content" id="quest-content-2">
+          <div class="section">
+            <h4 class="zone-title">🏢 Data Center & Virtualization Basics</h4>
+            <div class="mission" data-topic="2-1" data-xp="100">
+              <input type="checkbox" id="topic-2-1" />
+              <div class="check-orb"></div>
+              <span class="mission-text">Data Center Technology</span>
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="2-2" data-xp="100">
+              <input type="checkbox" id="topic-2-2" />
+              <div class="check-orb"></div>
+              <span class="mission-text">Virtualization Technology</span>
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="2-3" data-xp="100">
+              <input type="checkbox" id="topic-2-3" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Implementation Levels of Virtualization</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+          </div>
+          <div class="section">
+            <h4 class="zone-title">🔧 Virtualization Architecture</h4>
+            <div class="mission" data-topic="2-4" data-xp="100">
+              <input type="checkbox" id="topic-2-4" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Virtualization Structures, Tools, and Mechanisms</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="2-5" data-xp="100">
+              <input type="checkbox" id="topic-2-5" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Managing the Virtualization Environment</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="2-6" data-xp="100">
+              <input type="checkbox" id="topic-2-6" />
+              <div class="check-orb"></div>
+              <span class="mission-text">Types of Hypervisors</span>
+              <span class="mission-xp">+100 XP</span>
+            </div>
+          </div>
+          <div class="section">
+            <h4 class="zone-title">💻 Resource Virtualization</h4>
+            <div class="mission" data-topic="2-7" data-xp="100">
+              <input type="checkbox" id="topic-2-7" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Virtualization of CPU, Memory, and I/O Devices</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="2-8" data-xp="100">
+              <input type="checkbox" id="topic-2-8" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Virtual Clusters and Resource Management</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+            <div class="mission" data-topic="2-9" data-xp="100">
+              <input type="checkbox" id="topic-2-9" />
+              <div class="check-orb"></div>
+              <span class="mission-text"
+                >Virtualization for Data Center Automation</span
+              >
+              <span class="mission-xp">+100 XP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetProgress()">
+        ☠️ RESET ALL PROGRESS ☠️
+      </button>
+
+      <div class="footer-info">CSE314 — Cloud Quest — Exam: 23-02-2026</div>
+    </div>
+
+    <script>
+      // ===== GAME CONFIG =====
+      const XP_PER_TOPIC = 100;
+      const RANKS = [
+        { level: 1, name: "Cloud Noob", icon: "🌱", xpNeeded: 0 },
+        { level: 2, name: "Cloud Curious", icon: "🌤️", xpNeeded: 200 },
+        { level: 3, name: "Cloud Explorer", icon: "☁️", xpNeeded: 400 },
+        { level: 4, name: "Cloud Rider", icon: "🌩️", xpNeeded: 600 },
+        { level: 5, name: "Cloud Warrior", icon: "⚡", xpNeeded: 800 },
+        { level: 6, name: "Cloud Wizard", icon: "🧙", xpNeeded: 1000 },
+        { level: 7, name: "Cloud Architect", icon: "🏗️", xpNeeded: 1200 },
+        { level: 8, name: "Cloud Master", icon: "👑", xpNeeded: 1500 },
+      ];
+
+      let gameState = {
+        completedTopics: [],
+        totalXP: 0,
+        currentLevel: 1,
+        streak: 0,
+        lastCompletionDate: null,
+      };
+
+      // ===== STARS =====
+      function createStars() {
+        const container = document.getElementById("stars");
+        for (let i = 0; i < 80; i++) {
+          const star = document.createElement("div");
+          star.className = "star";
+          const size = Math.random() * 3 + 1;
+          star.style.cssText = `
+            width: ${size}px; height: ${size}px;
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 100}%;
+            --dur: ${Math.random() * 3 + 2}s;
+            animation-delay: ${Math.random() * 3}s;
+          `;
+          container.appendChild(star);
+        }
+      }
+
+      // ===== FLOATING CLOUDS =====
+      function createFloatingClouds() {
+        const container = document.getElementById("floating-clouds");
+        const clouds = ["☁️", "🌤️", "⛅", "🌥️"];
+        for (let i = 0; i < 5; i++) {
+          const cloud = document.createElement("div");
+          cloud.className = "floating-cloud";
+          cloud.textContent = clouds[Math.floor(Math.random() * clouds.length)];
+          const duration = Math.random() * 30 + 30;
+          const top = Math.random() * 80 + 5;
+          const delay = Math.random() * 20;
+          cloud.style.cssText = `
+            top: ${top}%;
+            animation-duration: ${duration}s;
+            animation-delay: -${delay}s;
+            font-size: ${Math.random() * 2 + 2}rem;
+          `;
+          container.appendChild(cloud);
+        }
+      }
+
+      // ===== CONFETTI =====
+      function spawnConfetti(x, y) {
+        const container = document.getElementById("confetti-container");
+        const colors = [
+          "#ffd700",
+          "#ff6bff",
+          "#00d4ff",
+          "#7b68ee",
+          "#ff4444",
+          "#00ff88",
+        ];
+        for (let i = 0; i < 20; i++) {
+          const piece = document.createElement("div");
+          piece.className = "confetti-piece";
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          const left = x + (Math.random() - 0.5) * 200;
+          const angle = Math.random() * 360;
+          piece.style.cssText = `
+            left: ${left}px; top: ${y}px;
+            background: ${color};
+            border-radius: ${Math.random() > 0.5 ? "50%" : "2px"};
+            width: ${Math.random() * 8 + 5}px;
+            height: ${Math.random() * 8 + 5}px;
+            animation-duration: ${Math.random() * 1.5 + 1.5}s;
+            animation-delay: ${Math.random() * 0.3}s;
+            transform: rotate(${angle}deg);
+          `;
+          container.appendChild(piece);
+          setTimeout(() => piece.remove(), 3500);
+        }
+      }
+
+      function megaConfetti() {
+        const container = document.getElementById("confetti-container");
+        const colors = [
+          "#ffd700",
+          "#ff6bff",
+          "#00d4ff",
+          "#7b68ee",
+          "#ff4444",
+          "#00ff88",
+          "#ffaa00",
+        ];
+        for (let i = 0; i < 60; i++) {
+          const piece = document.createElement("div");
+          piece.className = "confetti-piece";
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.cssText = `
+            left: ${Math.random() * window.innerWidth}px;
+            background: ${color};
+            border-radius: ${Math.random() > 0.5 ? "50%" : "2px"};
+            width: ${Math.random() * 10 + 6}px;
+            height: ${Math.random() * 10 + 6}px;
+            animation-duration: ${Math.random() * 2 + 2}s;
+            animation-delay: ${Math.random() * 0.8}s;
+          `;
+          container.appendChild(piece);
+          setTimeout(() => piece.remove(), 4000);
+        }
+      }
+
+      // ===== XP POPUP =====
+      function showXPPopup(x, y, amount) {
+        const popup = document.createElement("div");
+        popup.className = "xp-popup";
+        popup.textContent = `+${amount} XP`;
+        popup.style.left = x + "px";
+        popup.style.top = y + "px";
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 1500);
+      }
+
+      // ===== LEVEL UP =====
+      function showLevelUp(rank) {
+        const overlay = document.getElementById("level-up-overlay");
+        document.getElementById("levelup-icon").textContent = rank.icon;
+        document.getElementById("levelup-text").textContent =
+          `LEVEL ${rank.level}!`;
+        document.getElementById("levelup-rank").textContent = rank.name;
+        overlay.classList.add("active");
+        megaConfetti();
+      }
+
+      function dismissLevelUp() {
+        document.getElementById("level-up-overlay").classList.remove("active");
+      }
+
+      // ===== SCREEN SHAKE =====
+      function screenShake() {
+        document.body.classList.add("shake");
+        setTimeout(() => document.body.classList.remove("shake"), 300);
+      }
+
+      // ===== COUNTDOWN =====
+      function updateCountdown() {
+        const exam = new Date("2026-02-23T09:00:00");
+        const now = new Date();
+        const diff = exam - now;
+        if (diff <= 0) {
+          document.getElementById("cd-days").textContent = "00";
+          document.getElementById("cd-hours").textContent = "00";
+          document.getElementById("cd-mins").textContent = "00";
+          document.getElementById("cd-secs").textContent = "00";
+          return;
+        }
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((diff / (1000 * 60)) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        document.getElementById("cd-days").textContent = String(d).padStart(
+          2,
+          "0",
+        );
+        document.getElementById("cd-hours").textContent = String(h).padStart(
+          2,
+          "0",
+        );
+        document.getElementById("cd-mins").textContent = String(m).padStart(
+          2,
+          "0",
+        );
+        document.getElementById("cd-secs").textContent = String(s).padStart(
+          2,
+          "0",
+        );
+      }
+
+      // ===== RANK =====
+      function getRank(xp) {
+        let rank = RANKS[0];
+        for (const r of RANKS) {
+          if (xp >= r.xpNeeded) rank = r;
+        }
+        return rank;
+      }
+
+      function getNextRank(currentRank) {
+        const idx = RANKS.findIndex((r) => r.level === currentRank.level);
+        return idx < RANKS.length - 1 ? RANKS[idx + 1] : null;
+      }
+
+      // ===== TOGGLE QUEST =====
+      function toggleQuest(num) {
+        const content = document.getElementById(`quest-content-${num}`);
+        content.classList.toggle("open");
+      }
+
+      // ===== UPDATE HUD =====
+      function updateHUD() {
+        const totalMissions = document.querySelectorAll(".mission").length;
+        const completedMissions =
+          document.querySelectorAll(".mission.completed").length;
+
+        document.getElementById("stat-completed").textContent =
+          completedMissions;
+        document.getElementById("stat-remaining").textContent =
+          totalMissions - completedMissions;
+        document.getElementById("stat-total-xp").textContent =
+          gameState.totalXP;
+        document.getElementById("stat-streak").textContent = gameState.streak;
+
+        const rank = getRank(gameState.totalXP);
+        const nextRank = getNextRank(rank);
+        document.getElementById("rank-avatar").textContent = rank.icon;
+        document.getElementById("rank-name").textContent = rank.name;
+        document.getElementById("level-badge").textContent =
+          `LVL ${rank.level}`;
+
+        if (nextRank) {
+          const xpInLevel = gameState.totalXP - rank.xpNeeded;
+          const xpForLevel = nextRank.xpNeeded - rank.xpNeeded;
+          const pct = Math.min(100, (xpInLevel / xpForLevel) * 100);
+          document.getElementById("xp-bar-fill").style.width = pct + "%";
+          document.getElementById("current-xp").textContent = gameState.totalXP;
+          document.getElementById("next-xp").textContent = nextRank.xpNeeded;
+        } else {
+          document.getElementById("xp-bar-fill").style.width = "100%";
+          document.getElementById("current-xp").textContent = gameState.totalXP;
+          document.getElementById("next-xp").textContent = "MAX";
+        }
+
+        document.querySelectorAll(".quest").forEach((quest) => {
+          const qNum = quest.dataset.quest;
+          const missions = quest.querySelectorAll(".mission");
+          const completed = quest.querySelectorAll(".mission.completed");
+          const pct =
+            missions.length > 0
+              ? Math.round((completed.length / missions.length) * 100)
+              : 0;
+          const fill = document.querySelector(`[data-quest-fill="${qNum}"]`);
+          const pctText = document.querySelector(`[data-quest-pct="${qNum}"]`);
+          if (fill) fill.style.width = pct + "%";
+          if (pctText)
+            pctText.textContent = `${completed.length}/${missions.length}`;
+
+          if (completed.length === missions.length && missions.length > 0) {
+            quest.classList.add("quest-complete");
+          } else {
+            quest.classList.remove("quest-complete");
+          }
+        });
+
+        updateAchievements(completedMissions);
+      }
+
+      // ===== ACHIEVEMENTS =====
+      function updateAchievements(completed) {
+        const q1Done =
+          document.querySelectorAll("#quest-1 .mission.completed").length ===
+          document.querySelectorAll("#quest-1 .mission").length;
+        const q2Done =
+          document.querySelectorAll("#quest-2 .mission.completed").length ===
+          document.querySelectorAll("#quest-2 .mission").length;
+
+        toggleBadge("badge-1", completed >= 1);
+        toggleBadge("badge-3", completed >= 3);
+        toggleBadge("badge-5", completed >= 5);
+        toggleBadge("badge-u1", q1Done);
+        toggleBadge("badge-10", completed >= 10);
+        toggleBadge("badge-u2", q2Done);
+        toggleBadge("badge-all", completed >= 15);
+      }
+
+      function toggleBadge(id, unlock) {
+        const badge = document.getElementById(id);
+        if (badge) {
+          if (unlock) badge.classList.add("unlocked");
+          else badge.classList.remove("unlocked");
+        }
+      }
+
+      // ===== STREAK =====
+      function updateStreak() {
+        const today = new Date().toDateString();
+        if (gameState.lastCompletionDate === today) return;
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (gameState.lastCompletionDate === yesterday.toDateString()) {
+          gameState.streak++;
+        } else if (gameState.lastCompletionDate !== today) {
+          gameState.streak = 1;
+        }
+        gameState.lastCompletionDate = today;
+      }
+
+      // ===== SAVE / LOAD =====
+      function saveGame() {
+        localStorage.setItem("cloud-quest", JSON.stringify(gameState));
+      }
+
+      function loadGame() {
+        const saved = localStorage.getItem("cloud-quest");
+        if (saved) {
+          const data = JSON.parse(saved);
+          gameState = { ...gameState, ...data };
+          gameState.completedTopics.forEach((topicId) => {
+            const mission = document.querySelector(`[data-topic="${topicId}"]`);
+            if (mission) {
+              mission.classList.add("completed");
+              mission.querySelector("input").checked = true;
+            }
+          });
+        }
+        updateHUD();
+      }
+
+      // ===== MISSION CLICK =====
+      document.querySelectorAll(".mission").forEach((mission) => {
+        mission.addEventListener("click", function (e) {
+          const wasCompleted = this.classList.contains("completed");
+          this.classList.toggle("completed");
+          this.querySelector("input").checked =
+            this.classList.contains("completed");
+
+          const topicId = this.dataset.topic;
+          const xp = parseInt(this.dataset.xp) || XP_PER_TOPIC;
+          const oldLevel = getRank(gameState.totalXP).level;
+
+          if (!wasCompleted) {
+            gameState.completedTopics.push(topicId);
+            gameState.totalXP += xp;
+            updateStreak();
+
+            const rect = this.getBoundingClientRect();
+            showXPPopup(rect.right - 40, rect.top, xp);
+            spawnConfetti(rect.left + rect.width / 2, rect.top);
+            screenShake();
+
+            const newLevel = getRank(gameState.totalXP).level;
+            if (newLevel > oldLevel) {
+              setTimeout(() => showLevelUp(getRank(gameState.totalXP)), 600);
+            }
+
+            const allMissions = document.querySelectorAll(".mission").length;
+            const allCompleted =
+              document.querySelectorAll(".mission.completed").length;
+            if (allCompleted === allMissions) {
+              setTimeout(() => megaConfetti(), 800);
+              setTimeout(() => megaConfetti(), 1600);
+            }
+          } else {
+            gameState.completedTopics = gameState.completedTopics.filter(
+              (t) => t !== topicId,
+            );
+            gameState.totalXP = Math.max(0, gameState.totalXP - xp);
+          }
+
+          saveGame();
+          updateHUD();
+        });
+      });
+
+      // ===== RESET =====
+      function resetProgress() {
+        if (
+          confirm("☠️ Are you sure? All XP, levels, and progress will be lost!")
+        ) {
+          document.querySelectorAll(".mission").forEach((m) => {
+            m.classList.remove("completed");
+            m.querySelector("input").checked = false;
+          });
+          gameState = {
+            completedTopics: [],
+            totalXP: 0,
+            currentLevel: 1,
+            streak: 0,
+            lastCompletionDate: null,
+          };
+          localStorage.removeItem("cloud-quest");
+          updateHUD();
+        }
+      }
+
+      // ===== INIT =====
+      createStars();
+      createFloatingClouds();
+      loadGame();
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    </script>
+  </body>
+</html>
