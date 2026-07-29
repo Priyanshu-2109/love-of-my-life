@@ -6,12 +6,557 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta http-equiv="refresh" content="0; url=Cloud.html" />
-    <title>CSE314 - Advanced Computing</title>
+    <meta
+      name="description"
+      content="Marvel-inspired MCU movie checklist in narrative order."
+    />
+    <title>MCU Narrative Order Checklist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #070a12;
+        --panel: rgba(15, 20, 36, 0.92);
+        --panel-soft: rgba(255, 255, 255, 0.06);
+        --line: rgba(255, 255, 255, 0.12);
+        --text: #f5f7ff;
+        --muted: #aab2d5;
+        --red: #ff3154;
+        --gold: #ffd25f;
+        --cyan: #58d7ff;
+        --shadow: 0 26px 80px rgba(0, 0, 0, 0.45);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(255, 49, 84, 0.22),
+            transparent 28%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(88, 215, 255, 0.2),
+            transparent 28%
+          ),
+          radial-gradient(
+            circle at bottom left,
+            rgba(255, 210, 95, 0.12),
+            transparent 24%
+          ),
+          linear-gradient(145deg, #04060b 0%, #0a1020 46%, #04060b 100%);
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        opacity: 0.45;
+        mask-image: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.72),
+          transparent 96%
+        );
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 1;
+        width: min(1200px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 60px;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 28px;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255, 49, 84, 0.18),
+            rgba(15, 20, 36, 0.95) 38%,
+            rgba(15, 20, 36, 0.88)
+          ),
+          linear-gradient(
+            90deg,
+            rgba(88, 215, 255, 0.12),
+            transparent 38%,
+            rgba(255, 210, 95, 0.12)
+          );
+        box-shadow: var(--shadow);
+      }
+
+      .hero::before,
+      .hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(12px);
+        opacity: 0.8;
+        pointer-events: none;
+      }
+
+      .hero::before {
+        width: 260px;
+        height: 260px;
+        top: -130px;
+        right: -90px;
+        background: radial-gradient(
+          circle,
+          rgba(255, 210, 95, 0.28),
+          transparent 72%
+        );
+      }
+
+      .hero::after {
+        width: 180px;
+        height: 180px;
+        left: -60px;
+        bottom: -70px;
+        background: radial-gradient(
+          circle,
+          rgba(88, 215, 255, 0.2),
+          transparent 72%
+        );
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--gold);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--red);
+        box-shadow: 0 0 16px rgba(255, 49, 84, 0.8);
+      }
+
+      h1 {
+        margin: 14px 0 8px;
+        font-family: "Bebas Neue", Impact, sans-serif;
+        font-size: clamp(3.2rem, 8vw, 6.8rem);
+        line-height: 0.88;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-shadow: 0 10px 32px rgba(0, 0, 0, 0.48);
+      }
+
+      .hero-copy {
+        max-width: 920px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.02rem;
+        line-height: 1.7;
+      }
+
+      .section-label {
+        margin: 28px 0 12px;
+        font-size: 0.82rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.24em;
+      }
+
+      .helper {
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      .board {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .card {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 18px;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        background:
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0.03)
+          ),
+          linear-gradient(
+            135deg,
+            rgba(17, 23, 42, 0.96),
+            rgba(10, 13, 23, 0.98)
+          );
+        box-shadow: 0 10px 34px rgba(0, 0, 0, 0.22);
+        transition:
+          transform 170ms ease,
+          border-color 170ms ease,
+          box-shadow 170ms ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .card.watched {
+        border-color: rgba(255, 210, 95, 0.28);
+      }
+
+      .index {
+        width: 52px;
+        height: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 16px;
+        font-family: "Bebas Neue", Impact, sans-serif;
+        font-size: 1.7rem;
+        letter-spacing: 0.08em;
+        color: #0b130f;
+        background: linear-gradient(135deg, #5df2a6, #d2ff74);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+        flex-shrink: 0;
+      }
+
+      .title-wrap {
+        min-width: 0;
+      }
+
+      .movie-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        line-height: 1.35;
+        color: var(--text);
+        transition:
+          color 160ms ease,
+          opacity 160ms ease,
+          text-decoration-color 160ms ease;
+      }
+
+      .card.watched .movie-title {
+        color: rgba(245, 247, 255, 0.7);
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
+        text-decoration-color: rgba(255, 210, 95, 0.8);
+      }
+
+      .movie-note {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+
+      .check {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.05);
+        color: transparent;
+        font-size: 1.02rem;
+        cursor: pointer;
+        transition:
+          transform 160ms ease,
+          background 160ms ease,
+          border-color 160ms ease,
+          color 160ms ease;
+        flex-shrink: 0;
+      }
+
+      .check:hover {
+        transform: scale(1.04);
+        border-color: rgba(255, 255, 255, 0.28);
+      }
+
+      .card.watched .check {
+        color: #0b130f;
+        background: linear-gradient(135deg, #5df2a6, #d2ff74);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .footer {
+        margin: 26px 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        text-align: center;
+      }
+
+      @media (max-width: 760px) {
+        .wrap {
+          width: min(100vw - 20px, 1200px);
+          padding-top: 12px;
+          padding-bottom: 28px;
+        }
+
+        .hero {
+          padding: 22px;
+          border-radius: 22px;
+        }
+
+        .hero-copy {
+          font-size: 0.97rem;
+        }
+
+        .card {
+          grid-template-columns: auto 1fr;
+          align-items: start;
+        }
+
+        .check {
+          grid-column: 2;
+          justify-self: end;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
   </head>
   <body>
+    <main class="wrap">
+      <section class="hero">
+        <div class="eyebrow">Marvel-inspired watch order</div>
+        <h1>MCU Narrative Order Checklist</h1>
+        <p class="hero-copy">
+          Keep the full Marvel movie timeline in one place and mark each title
+          as watched as you go. Watched movies stay crossed out after refresh,
+          so the list always picks up where you left off.
+        </p>
+      </section>
+
+      <p class="section-label">Movies in narrative order</p>
+      <p class="helper">
+        Tap the circle on the right to mark a movie watched. The title will
+        strike through immediately.
+      </p>
+      <section class="board" id="board"></section>
+
+      <p class="footer">
+        Progress is stored in your browser and mirrored to a cookie so it
+        survives refreshes.
+      </p>
+    </main>
+
     <script>
-      window.location.href = "Cloud.html";
+      const STORAGE_KEY = "mcu-narrative-checklist";
+      const COOKIE_NAME = "mcu_narrative_checklist";
+
+      const movies = [
+        { title: "Captain America: The First Avenger" },
+        { title: "Iron Man" },
+        { title: "The Incredible Hulk" },
+        { title: "Iron Man 2" },
+        { title: "Thor" },
+        { title: "The Avengers" },
+        { title: "Thor: The Dark World" },
+        { title: "Guardians of the Galaxy" },
+        { title: "Captain America: The Winter Soldier" },
+        { title: "Iron Man 3" },
+        { title: "Guardians of the Galaxy Vol. 2" },
+        { title: "Avengers: Age of Ultron" },
+        { title: "Doctor Strange" },
+        { title: "Ant-Man" },
+        { title: "Captain America: Civil War" },
+        {
+          title: "Black Widow",
+          note: "Watch the post-credit scene before Hawkeye.",
+        },
+        { title: "Black Panther" },
+        { title: "Spider-Man: Homecoming" },
+        {
+          title: "Ant-Man and the Wasp",
+          note: "Save the post-credit scene until after Infinity War.",
+        },
+        { title: "Thor: Ragnarok" },
+        { title: "Avengers: Infinity War" },
+        {
+          title: "Captain Marvel",
+          note: "Set before the modern era of the Avengers.",
+        },
+        { title: "Avengers: Endgame" },
+        { title: "Spider-Man: Far From Home" },
+        { title: "Spider-Man: No Way Home" },
+        { title: "Ant-Man and the Wasp: Quantumania" },
+        {
+          title: "Deadpool & Wolverine",
+          note: "Optional, placed where it fits best in your watch path.",
+        },
+        { title: "Thor: Love and Thunder" },
+        { title: "Guardians of the Galaxy Vol. 3" },
+        { title: "Black Panther: Wakanda Forever" },
+        { title: "Shang-Chi and the Legend of the Ten Rings" },
+        { title: "Doctor Strange in the Multiverse of Madness" },
+        { title: "Eternals" },
+        { title: "The Marvels" },
+        { title: "Captain America: Brave New World" },
+        { title: "Thunderbolts" },
+        { title: "Fantastic Four: First Steps" },
+      ].map((movie, index) => ({ ...movie, id: index + 1 }));
+
+      const state = loadState();
+      const board = document.getElementById("board");
+
+      render();
+
+      function render() {
+        board.replaceChildren(...movies.map(renderMovie));
+      }
+
+      function renderMovie(movie) {
+        const watched = Boolean(state.watched[String(movie.id)]);
+        const card = document.createElement("article");
+        card.className = watched ? "card watched" : "card";
+
+        const index = document.createElement("div");
+        index.className = "index";
+        index.textContent = String(movie.id).padStart(2, "0");
+
+        const titleWrap = document.createElement("div");
+        titleWrap.className = "title-wrap";
+
+        const title = document.createElement("h3");
+        title.className = "movie-title";
+        title.textContent = movie.title;
+        titleWrap.appendChild(title);
+
+        if (movie.note) {
+          const note = document.createElement("p");
+          note.className = "movie-note";
+          note.textContent = movie.note;
+          titleWrap.appendChild(note);
+        }
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "check";
+        button.setAttribute(
+          "aria-label",
+          watched
+            ? `Mark ${movie.title} as not watched`
+            : `Mark ${movie.title} as watched`,
+        );
+        button.textContent = watched ? "✓" : "○";
+        button.addEventListener("click", () => toggleWatched(movie.id));
+
+        card.append(index, titleWrap, button);
+        return card;
+      }
+
+      function toggleWatched(id) {
+        const key = String(id);
+        if (state.watched[key]) {
+          delete state.watched[key];
+        } else {
+          state.watched[key] = true;
+        }
+        persistState();
+        render();
+      }
+
+      function loadState() {
+        const empty = { watched: {} };
+        const cookieValue = readCookie(COOKIE_NAME);
+        if (cookieValue) {
+          try {
+            return normalizeState(JSON.parse(decodeURIComponent(cookieValue)));
+          } catch {}
+        }
+
+        const localValue = localStorage.getItem(STORAGE_KEY);
+        if (localValue) {
+          try {
+            return normalizeState(JSON.parse(localValue));
+          } catch {}
+        }
+
+        return empty;
+      }
+
+      function normalizeState(input) {
+        const watched = {};
+        if (input && typeof input.watched === "object") {
+          for (const [key, value] of Object.entries(input.watched)) {
+            if (value) {
+              watched[String(key)] = true;
+            }
+          }
+        }
+        return { watched };
+      }
+
+      function persistState() {
+        const payload = JSON.stringify(state);
+        localStorage.setItem(STORAGE_KEY, payload);
+        try {
+          document.cookie = `${COOKIE_NAME}=${encodeURIComponent(payload)}; max-age=31536000; path=/; samesite=lax`;
+        } catch {}
+      }
+
+      function readCookie(name) {
+        const prefix = `${name}=`;
+        const parts = document.cookie ? document.cookie.split(/;\s*/) : [];
+        for (const part of parts) {
+          if (part.startsWith(prefix)) {
+            return part.slice(prefix.length);
+          }
+        }
+        return "";
+      }
     </script>
   </body>
 </html>
