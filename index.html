@@ -408,19 +408,24 @@
         { title: "Captain America: The Winter Soldier" },
         { title: "Iron Man 3" },
         { title: "Guardians of the Galaxy Vol. 2" },
+        {
+          title: "I Am Groot, S1 & S2",
+          optional: true,
+          note: "Disney+ shorts. Safe to skip for the main timeline.",
+        },
         { title: "Avengers: Age of Ultron" },
         { title: "Doctor Strange" },
         { title: "Ant-Man" },
         { title: "Captain America: Civil War" },
         {
           title: "Black Widow",
-          note: "Watch the post-credit scene before Hawkeye.",
+          note: "Watch the post-credit scene before Hawkeye to avoid a spoiler.",
         },
         { title: "Black Panther" },
         { title: "Spider-Man: Homecoming" },
         {
           title: "Ant-Man and the Wasp",
-          note: "Save the post-credit scene until after Infinity War.",
+          note: "Save the post-credit scene until after Avengers: Infinity War.",
         },
         { title: "Thor: Ragnarok" },
         { title: "Avengers: Infinity War" },
@@ -429,24 +434,94 @@
           note: "Set before the modern era of the Avengers.",
         },
         { title: "Avengers: Endgame" },
+        { title: "WandaVision, S1", note: "Disney+ series." },
+        {
+          title: "The Falcon and the Winter Soldier, S1",
+          note: "Disney+ series.",
+        },
         { title: "Spider-Man: Far From Home" },
         { title: "Spider-Man: No Way Home" },
+        { title: "Hawkeye, S1", note: "Disney+ series." },
+        {
+          title: "Guardians of the Galaxy Holiday Special",
+          note: "Disney+ special.",
+        },
+        { title: "Loki, S1", note: "Disney+ series." },
         { title: "Ant-Man and the Wasp: Quantumania" },
+        { title: "Loki, S2", note: "Disney+ series." },
+        {
+          title: "What If...?, S1",
+          optional: true,
+          note: "Optional animated multiverse stories.",
+        },
+        {
+          title: "What If...?, S2",
+          optional: true,
+          note: "Optional animated multiverse stories.",
+        },
+        {
+          title: "What If...?, S3",
+          optional: true,
+          note: "Optional animated multiverse stories.",
+        },
         {
           title: "Deadpool & Wolverine",
-          note: "Optional, placed where it fits best in your watch path.",
+          optional: true,
+          note: "Optional for now.",
         },
         { title: "Thor: Love and Thunder" },
         { title: "Guardians of the Galaxy Vol. 3" },
         { title: "Black Panther: Wakanda Forever" },
+        {
+          title: "Moon Knight, S1",
+          optional: true,
+          note: "Optional for now. Disney+ series.",
+        },
         { title: "Shang-Chi and the Legend of the Ten Rings" },
         { title: "Doctor Strange in the Multiverse of Madness" },
+        { title: "Agatha All Along, S1", note: "Disney+ series." },
         { title: "Eternals" },
+        { title: "She-Hulk: Attorney at Law, S1", note: "Disney+ series." },
+        { title: "Ms. Marvel, S1", note: "Disney+ series." },
         { title: "The Marvels" },
+        { title: "Secret Invasion, S1", note: "Disney+ series." },
+        {
+          title: "Echo, S1",
+          optional: true,
+          note: "Optional for now. Disney+ series.",
+        },
+        {
+          title: "Daredevil: Born Again, S1",
+          optional: true,
+          note: "Optional for now. Disney+ series.",
+        },
+        {
+          title: "Daredevil: Born Again, S2",
+          optional: true,
+          note: "Optional for now. Disney+ series.",
+        },
         { title: "Captain America: Brave New World" },
+        { title: "Ironheart, S1", note: "Disney+ series." },
         { title: "Thunderbolts" },
         { title: "Fantastic Four: First Steps" },
-      ].map((movie, index) => ({ ...movie, id: index + 1 }));
+        { title: "Wonder Man", note: "Disney+ series." },
+        {
+          title: "Werewolf by Night",
+          optional: true,
+          note: "Optional special.",
+        },
+        {
+          title: "Eyes of Wakanda, S1",
+          optional: true,
+          note: "Optional. Disney+ series.",
+        },
+      ].map((movie, index) => ({
+        ...movie,
+        id: index + 1,
+        displayTitle: movie.optional
+          ? `${movie.title} (optional for now)`
+          : movie.title,
+      }));
 
       const state = loadState();
       const board = document.getElementById("board");
@@ -471,7 +546,7 @@
 
         const title = document.createElement("h3");
         title.className = "movie-title";
-        title.textContent = movie.title;
+        title.textContent = movie.displayTitle;
         titleWrap.appendChild(title);
 
         if (movie.note) {
